@@ -1,0 +1,13 @@
+language: php
+
+php:
+    - '5.5'
+    - '5.6'
+
+install: composer update
+
+# remove any env variables set by phpunit since they are already present in travis
+before_script: make clear-phpunit-env
+
+# run all tests
+script: make test

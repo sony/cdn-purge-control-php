@@ -1,0 +1,6 @@
+{
+    "description": "CDN Purge Control SDK for PHP example",
+    "require": {
+        "sony/cdn-purge-control-php": "dev-master"
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "name": "sony/cdn-purge-control-php",
+    "description": "CDN Purge Control SDK for PHP - Lightweight PHP library to control multiple CDN edge cache.",
+    "keywords": ["cdn","purge","cache","sdk","cloudfront","limelight"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sony Corporation",
+            "homepage": "http://www.sony.co.jp"
+        }
+    ],
+    "require": {
+        "php": ">=5.5",
+        "aws/aws-sdk-php": "^3.8",
+        "guzzlehttp/guzzle": "^6.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "CdnPurge\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CdnPurge\\Test\\": "tests/"
+        },
+        "classmap": ["build/"]
+    }
+}

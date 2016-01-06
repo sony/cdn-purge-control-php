@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./tests/bootstrap.php"
+         colors="true">
+
+  <php>
+   <!-- Specify the AWS IAM account Access Key Id -->
+   <env name="AWS_ACCESS_KEY_ID" value="change_me" />
+   <!-- Specify the AWS IAM account Secret Access Key -->
+   <env name="AWS_SECRET_ACCESS_KEY" value="change_me" />
+   <!-- Specify the AWS CloudFront Distribution Id -->
+   <env name="AWS_CF_DIST_ID" value="change_me" />
+   <!-- Specify the Limelight username -->
+   <env name="LL_USERNAME" value="change_me" />
+   <!-- Specify the Limelight Shared Key -->
+   <env name="LL_SHARED_KEY" value="change_me" />
+   <!-- Specify the Limelight API shortname -->
+   <env name="LL_API_SHORTNAME" value="change_me" />
+   <!-- Specify the Limelight Publish url -->
+   <env name="LL_PUBLISH_URL" value="change_me" />
+  </php>
+
+  <testsuites>
+    <testsuite name="CDN Purge Tests">
+      <directory>tests</directory>
+    </testsuite>
+  </testsuites>
+
+  <filter>
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">./src</directory>
+      <exclude>
+        <directory suffix="Interface.php">src/</directory>
+      </exclude>
+    </whitelist>
+  </filter>
+</phpunit>
