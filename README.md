@@ -1,6 +1,8 @@
 CdnPurge, Multi CDN purge control library for PHP
 =================================================
 
+[![Build Status](https://travis-ci.org/sony/cdn-purge-control-php.svg)](https://travis-ci.org/sony/cdn-purge-control-php)
+
 **CdnPurge** is a lightweight PHP CDN client which makes it easier to purge contents for
 multiple CDN providers. Currently, CdnPurge supports [AWS CloudFront](https://aws.amazon.com/cloudfront/)
 and [Limelight](https://www.limelight.com/).
