@@ -37,7 +37,7 @@ class LimelightClientTest extends \PHPUnit_Framework_TestCase
             $config['limelight']['email'] = $email;
         }
         if ($callbacks) {
-            $config['limelight']['callbacks'] = $callbacks;
+            $config['limelight']['callback'] = $callbacks;
         }
         $credential = array(
             'limelight' => array(
@@ -103,14 +103,6 @@ public function testCanCreatePurgeRequestAndGetStatus($user, $sharedKey, $publis
 public function apiDataProvider()
 {
     $email = array(
-        'type' => 'detail',
-        'subject' => 'Purge Summary',
-        'to' => 'test@example.com',
-        'cc' => 'test@example.com',
-        'bcc' => 'test@example.com'
-    );
-
-    $emailWithoutType = array(
         'subject' => 'Purge Summary',
         'to' => 'test@example.com',
         'cc' => 'test@example.com',
@@ -118,16 +110,7 @@ public function apiDataProvider()
     );
 
     $callbacks = array(
-        array(
-            'type' => 'request',
-            'url' => 'http://test/callback.php'
-        )
-    );
-
-    $callbacksWithoutType = array(
-        array(
-            'url' => 'http://test/callback.php'
-        )
+        'url' => 'http://test/callback.php'
     );
 
     return array(
@@ -135,9 +118,7 @@ public function apiDataProvider()
         'call with publish url having a trailing slash' => array($this->user, $this->sharedKey, $this->publishUrlWithTrailingSlash),
         'call without publish url' => array($this->user, $this->sharedKey),
         'call with email' => array($this->user, $this->sharedKey, $this->publishUrl, $email, array()),
-        'call without email type' => array($this->user, $this->sharedKey, $this->publishUrl, $emailWithoutType),
         'call with cb' => array($this->user, $this->sharedKey, $this->publishUrl, array(), $callbacks),
-        'call without cb type' => array($this->user, $this->sharedKey, $this->publishUrl, array(), $callbacksWithoutType),
         'call with email & cb' => array($this->user, $this->sharedKey, $this->publishUrl, $email, $callbacks)
     );
 }

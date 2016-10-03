@@ -56,41 +56,41 @@ class RequestDispatcher
     public function createPurgeRequest(array $purgePaths)
     {
         try {
-            $uri = $this->_host . ':' . $this->_port . $this->_endpoint . $this->_version . ApiConstants::LL_PATH_PURGE_REQUEST;
+            $uriPath = '/account' . '/' . $this->_shortname . ApiConstants::LL_PATH_PURGE_REQUEST;
+            $uri = $this->_host . $this->_endpoint . $this->_version . $uriPath;
 
             $purgeEntries = $this->getAllPurgeEntries($purgePaths);
             $data = array(
-                'entries' => $purgeEntries,
+                'patterns' => $purgeEntries,
             );
 
             if (!empty($this->_email)) {
                 $emailInfo = $this->_email;
-                if (isset($emailInfo[ApiConstants::CONF_EMAIL_TYPE])) {
-                    $data['emailType'] = $emailInfo[ApiConstants::CONF_EMAIL_TYPE];
-                }
+                $emailReq = array();
                 if (isset($emailInfo[ApiConstants::CONF_EMAIL_SUBJECT])) {
-                    $data['emailSubject'] = $emailInfo[ApiConstants::CONF_EMAIL_SUBJECT];
+                    $emailReq['subject'] = $emailInfo[ApiConstants::CONF_EMAIL_SUBJECT];
                 }
                 if (isset($emailInfo[ApiConstants::CONF_EMAIL_TO])) {
-                    $data['emailTo'] = $emailInfo[ApiConstants::CONF_EMAIL_TO];
+                    $emailReq['to'] = $emailInfo[ApiConstants::CONF_EMAIL_TO];
                 }
                 if (isset($emailInfo[ApiConstants::CONF_EMAIL_CC])) {
-                    $data['emailCC'] = $emailInfo[ApiConstants::CONF_EMAIL_CC];
+                    $emailReq['cc'] = $emailInfo[ApiConstants::CONF_EMAIL_CC];
                 }
                 if (isset($emailInfo[ApiConstants::CONF_EMAIL_BCC])) {
-                    $data['emailBCC'] = $emailInfo[ApiConstants::CONF_EMAIL_BCC];
+                    $emailReq['bcc'] = $emailInfo[ApiConstants::CONF_EMAIL_BCC];
                 }
+                $data['email'] = $emailReq;
             }
 
-            if (!empty($this->_callbacks)) {
-                $data['callbacks'] = $this->_callbacks;
+            if (!empty($this->_callback)) {
+                $data['callback'] = $this->_callback;
             }
 
             $dataJson = json_encode($data);
             $dataJson = str_replace('\/', '/', $dataJson);
 
             $httpClient = new \GuzzleHttp\Client();
-            $httpOpts = $this->getHttpClientOpts('POST', ApiConstants::LL_PATH_PURGE_REQUEST, '', $dataJson);
+            $httpOpts = $this->getHttpClientOpts('POST', $uriPath, '', $dataJson);
             $response = $httpClient->request('POST', $uri, $httpOpts);
 
             $responseArr = json_decode($response->getBody(), true);
@@ -112,19 +112,19 @@ class RequestDispatcher
     public function getPurgeStatus($requestId)
     {
         try {
-            $uri = $this->_host . ':' . $this->_port . $this->_endpoint . $this->_version . ApiConstants::LL_PATH_PURGE_STATUS . '/' . $requestId;
+            $uriPath = '/account' . '/' . $this->_shortname . ApiConstants::LL_PATH_PURGE_REQUEST . '/' . $requestId;
+            $uri = $this->_host . $this->_endpoint . $this->_version . $uriPath;
 
             $httpClient = new \GuzzleHttp\Client();
-            $httpOpts = $this->getHttpClientOpts('GET', ApiConstants::LL_PATH_PURGE_STATUS . '/' . $requestId, '', '');
+            $httpOpts = $this->getHttpClientOpts('GET', $uriPath, '', '');
             $response = $httpClient->request('GET', $uri, $httpOpts);
 
             $responseArr = json_decode($response->getBody(), true);
-
-            if ($responseArr['completedEntries'] != $responseArr['totalEntries']) {
+            if (empty(array_search('completed', array_column($responseArr['states'], 'state')))) {
+                // states has no 'completed' state; might still be in progress
                 return 'InProgress';
             }
             return 'Completed';
-
         } catch (\Exception $e) {
             throw new \CdnPurge\CdnClientException($e->getMessage(), $e->getCode());
         }
@@ -140,13 +140,12 @@ class RequestDispatcher
      * @param string $shortname  Limelight Api shortname
      * @param string $publishUrl Limelight publish url
      * @param string $email      Array of email info to return purge completion details to
-     * @param string $callbacks  List of callbacks (simple HTTP POST to specific URL) that will be executed after purge is completed
+     * @param string $callback   HTTP(S) callback URL for purge request state transition notifications
      * @param string $proxy      Proxy for http client
      */
-    protected function __construct($username, $sharedKey, $shortname, $publishUrl, $email, $callbacks, $proxy)
+    protected function __construct($username, $sharedKey, $shortname, $publishUrl, $email, $callback, $proxy)
     {
         $this->_host = ApiConstants::LL_HOST;
-        $this->_port = ApiConstants::LL_PORT;
         $this->_endpoint = ApiConstants::LL_ENDPOINT;
         $this->_version = ApiConstants::LL_VERSION;
         $this->_username = $username;
@@ -154,7 +153,7 @@ class RequestDispatcher
         $this->_shortname = $shortname;
         $this->_publishUrl = $publishUrl;
         $this->_email = $email;
-        $this->_callbacks = $callbacks;
+        $this->_callback = $callback;
         $this->_proxy = $proxy;
     }
 
@@ -168,18 +167,11 @@ class RequestDispatcher
      */
     private static function configureEmail($config)
     {
-        $email = NULL;
         if (!isset($config[ApiConstants::CONF_EMAIL]) || empty($config[ApiConstants::CONF_EMAIL])) {
-            return $email;
-        }
-        $email = $config[ApiConstants::CONF_EMAIL];
-
-        if (!isset($email[ApiConstants::CONF_EMAIL_TYPE])) {
-            // default email type is detailed
-            $email[ApiConstants::CONF_EMAIL_TYPE] = 'detail';
+            return NULL;
         }
 
-        return $email;
+        return $config[ApiConstants::CONF_EMAIL];
     }
 
     /**
@@ -192,31 +184,12 @@ class RequestDispatcher
      */
     private static function configureCallbacks($config)
     {
-        if (!isset($config[ApiConstants::CONF_CALLBACKS]) || !is_array($config[ApiConstants::CONF_CALLBACKS])) {
+        if (!isset($config[ApiConstants::CONF_CALLBACK]) || empty($config[ApiConstants::CONF_CALLBACK])) {
             // callbacks must be a list
             return NULL;
         }
 
-        $callbackCandidate = array();
-        foreach ($config[ApiConstants::CONF_CALLBACKS] as $key => $cb) {
-            if (!isset($cb[ApiConstants::CONF_CALLBACK_URL])) {
-                // url is required
-                continue;
-            }
-            $callback = array(
-                'callbackUrl' => $cb[ApiConstants::CONF_CALLBACK_URL]
-            );
-
-            if (!isset($cb[ApiConstants::CONF_CALLBACK_TYPE])) {
-                // defualt is request
-                $cb[ApiConstants::CONF_CALLBACK_TYPE] = 'request';
-            }
-            $callback['callbackType'] = $cb[ApiConstants::CONF_CALLBACK_TYPE];
-
-            array_push($callbackCandidate, $callback);
-        }
-
-        return $callbackCandidate;
+        return $config[ApiConstants::CONF_CALLBACK];
     }
 
     /**
@@ -238,10 +211,10 @@ class RequestDispatcher
 
             // push to entries
             array_push($purgeEntries, array(
-                'url' => $path,
-                'regex' => ApiConstants::LL_OPTION_ENABLE_REGEX,
-                'shortname' => $this->_shortname,
-                'delete' => ApiConstants::LL_OPTION_ENABLE_DELETE
+                'pattern' => $path,
+                'evict' => false,
+                'exact' => false,
+                'incqs' => false
             ));
         }
 
@@ -361,7 +334,7 @@ class RequestDispatcher
      */
     private function getTimestamp()
     {
-        return number_format(time()*1000,0,'.','');
+        return number_format(time() * 1000, 0, '.', '');
     }
 
     /**
@@ -391,10 +364,6 @@ class RequestDispatcher
     private function getMac($method, $path, $params, $timestamp, $data = '')
     {
         $datastring = "$method$this->_host";
-        // do not include port 80
-        if ($this->_port != ApiConstants::LL_PORT) {
-            $datastring = "$datastring:$this->_port";
-        }
         $datastring = "$datastring$this->_endpoint$this->_version$path$params$timestamp$data";
 
         // generate hash

@@ -144,14 +144,12 @@ Configurations are specified as an array.
 | limelight['shortname']            | String  | Yes       | Limelight api shortname |
 | limelight['publish_url']          | String  | No        | Limelight publish url. This is prepended to the purge path if the path doesn't start with 'http' or 'https' |
 | limelight['email']                | Array   | No        | Array of email info to send purge completion details to |
-| limelight['email']['type']        | String  | No        | Email type: 'detail' or 'summary' |
 | limelight['email']['subject']     | String  | No        | Subject of sent mail |
 | limelight['email']['to']          | String  | Yes       | Email recipient address. A comma is used to separate multiple recipients |
 | limelight['email']['cc']          | String  | No        | Email carbon copy. A comma is used to separate multiple recipients |
 | limelight['email']['bcc']         | String  | No        | Email blind carbon copy. A comma is used to separate multiple recipients |
-| limelight['callbacks']            | Array   | No        | List of callbacks (simple HTTP POST to specific URL) that will be executed after purge is completed |
-| limelight['callbacks']['type']    | String  | No        | Callback type: 'entry' (callback after each path entry) or 'request' (single callback after the request completes)
-| limelight['callbacks']['url']     | String  | Yes       | Callback url
+| limelight['callback']            | Array   | No        | HTTP(S) callback URL for purge request state transition notifications |
+| limelight['callback']['url']     | String  | Yes       | Callback url
 | http['proxy']                     | String  | No        | Specify http proxy for the client. For example: 'my-company.proxy.com:1234' |
 
 Development
