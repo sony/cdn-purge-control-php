@@ -98,6 +98,12 @@ public function testCanCreatePurgeRequestAndGetStatus($user, $sharedKey, $publis
     $this->assertFalse(empty($requestId));
 
     $this->assertEquals('InProgress', $client->getPurgeStatus($requestId));
+
+    // wait for sometime
+    sleep(10);
+
+    // purge request completed
+    $this->assertEquals('Completed', $client->getPurgeStatus($requestId));
 }
 
 public function apiDataProvider()

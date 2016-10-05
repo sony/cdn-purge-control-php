@@ -120,7 +120,7 @@ class RequestDispatcher
             $response = $httpClient->request('GET', $uri, $httpOpts);
 
             $responseArr = json_decode($response->getBody(), true);
-            if (empty(array_search('completed', array_column($responseArr['states'], 'state')))) {
+            if (empty(array_search('complete', array_column($responseArr['states'], 'state')))) {
                 // states has no 'completed' state; might still be in progress
                 return 'InProgress';
             }
