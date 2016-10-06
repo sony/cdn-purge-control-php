@@ -21,26 +21,7 @@ class RequestDispatcher
      */
     public static function connect($credential, $config)
     {
-        $shortname = $config[ApiConstants::CONF_SHORTNAME];
-
-        $publishUrl = NULL;
-        if (isset($config[ApiConstants::CONF_PUBLISH_URL])) {
-            $publishUrl = $config[ApiConstants::CONF_PUBLISH_URL];
-        }
-
-        $proxy = NULL;
-        if (isset($config[ApiConstants::CONF_HTTP]) && isset($config[ApiConstants::CONF_HTTP][ApiConstants::CONF_PROXY])) {
-            $proxy = $config[ApiConstants::CONF_HTTP][ApiConstants::CONF_PROXY];
-        }
-
-        // configure email and callbacks if any
-        $email = self::configureEmail($config);
-        $callbacks = self::configureCallbacks($config);
-
-        $username = $credential[ApiConstants::CREDENTIAL_USERNAME];
-        $sharedKey = $credential[ApiConstants::CREDENTIAL_SHARED_KEY];
-
-        return new self($username, $sharedKey, $shortname, $publishUrl, $email, $callbacks, $proxy);
+        return new self($credential, $config);
     }
 
     /**
@@ -131,30 +112,45 @@ class RequestDispatcher
     }
 
     /**
-     * @param string $host       Limelight Api host
-     * @param integer $port      Limelight Api port
-     * @param string $endpoint   Limelight Api endpoint. For example, '/purge-api'
-     * @param string $version    Limelight Api verison. For example, 'v1'
-     * @param string $username   Limelight user
-     * @param string $sharedKey  User shared key
-     * @param string $shortname  Limelight Api shortname
-     * @param string $publishUrl Limelight publish url
-     * @param string $email      Array of email info to return purge completion details to
-     * @param string $callback   HTTP(S) callback URL for purge request state transition notifications
-     * @param string $proxy      Proxy for http client
+     * @param array $credential  Limelight Credentials
+     * @param array $config Configuration options
      */
-    protected function __construct($username, $sharedKey, $shortname, $publishUrl, $email, $callback, $proxy)
+    protected function __construct($credential, $config)
     {
         $this->_host = ApiConstants::LL_HOST;
         $this->_endpoint = ApiConstants::LL_ENDPOINT;
         $this->_version = ApiConstants::LL_VERSION;
-        $this->_username = $username;
-        $this->_sharedKey = $sharedKey;
-        $this->_shortname = $shortname;
-        $this->_publishUrl = $publishUrl;
-        $this->_email = $email;
-        $this->_callback = $callback;
-        $this->_proxy = $proxy;
+
+        $this->_username = $credential[ApiConstants::CREDENTIAL_USERNAME];
+        $this->_sharedKey = $credential[ApiConstants::CREDENTIAL_SHARED_KEY];
+
+        $this->_shortname = $config[ApiConstants::CONF_SHORTNAME];
+        $this->_publishUrl = NULL;
+        if (isset($config[ApiConstants::CONF_PUBLISH_URL])) {
+            $this->_publishUrl = $config[ApiConstants::CONF_PUBLISH_URL];
+        }
+
+        $this->_patternEvict = false;
+        if (isset($config[ApiConstants::CONF_EVICT])) {
+            $this->_patternEvict = $config[ApiConstants::CONF_EVICT];
+        }
+        $this->_patternExact = false;
+        if (isset($config[ApiConstants::CONF_EXACT])) {
+            $this->_patternExact = $config[ApiConstants::CONF_EXACT];
+        }
+        $this->_patternIncqs = false;
+        if (isset($config[ApiConstants::CONF_INCQS])) {
+            $this->_patternIncqs = $config[ApiConstants::CONF_INCQS];
+        }
+
+        // configure email and callbacks if any
+        $this->_email = self::configureEmail($config);
+        $this->_callback = self::configureCallbacks($config);
+
+        $this->_proxy = NULL;
+        if (isset($config[ApiConstants::CONF_HTTP]) && isset($config[ApiConstants::CONF_HTTP][ApiConstants::CONF_PROXY])) {
+            $this->_proxy = $config[ApiConstants::CONF_HTTP][ApiConstants::CONF_PROXY];
+        }
     }
 
     /**
@@ -212,9 +208,9 @@ class RequestDispatcher
             // push to entries
             array_push($purgeEntries, array(
                 'pattern' => $path,
-                'evict' => false,
-                'exact' => false,
-                'incqs' => false
+                'evict' => $this->_patternEvict,
+                'exact' => $this->_patternExact,
+                'incqs' => $this->_patternIncqs
             ));
         }
 

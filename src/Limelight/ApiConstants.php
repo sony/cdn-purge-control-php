@@ -18,6 +18,9 @@ abstract class ApiConstants extends BasicEnum
     /** Configuration related constants */
     const CONF_SHORTNAME = 'shortname';
     const CONF_PUBLISH_URL = 'publish_url';
+    const CONF_EVICT = 'evict';
+    const CONF_EXACT = 'exact';
+    const CONF_INCQS = 'incqs';
     const CONF_EMAIL = 'email';
     const CONF_EMAIL_SUBJECT = 'subject';
     const CONF_EMAIL_TO = 'to';

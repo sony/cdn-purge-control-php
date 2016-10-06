@@ -21,15 +21,16 @@ use CdnPurge\Common\Client\CdnClient;
  *
  * - limelight['shortname']: (string)  Limelight api shortname. Required
  * - limelight['publish_url']: (string)  Limelight publish url. Publish url is prepended to the paths provided in createPurgeRequest() api call if the path doesnt start with 'http or https'. Optional
+ * - limelight['evict']: (boolean) if true, matching cache objects are evicted (deleted), otherwise invalidated. Optional. Default is false
+ * - limelight['exact']: (boolean) if true, paths to be purged are treated as an exact public URL. Optional. Default is false
+ * - limelight['incqs']: (boolean) if true, pattern is allowed to match query string part of URL, otherwise query string is stripped before matching. Optional. Default is false
  * - limelight['email']: (array) Array of email info to send purge completion details to. Optional
- * - limelight['email']['type']: (string) Email type: 'detail' or 'summary'
  * - limelight['email']['subject']: (string) Email type: 'detail' or 'summary'
  * - limelight['email']['to']: (string) Email recipient address. A comma is used to separate multiple recipients
  * - limelight['email']['cc']: (string) Email carbon copy. A comma is used to separate multiple recipients
  * - limelight['email']['bcc']: (string) Email blind carbon copy. A comma is used to separate multiple recipients
- * - limelight['callbacks']: (array) List of callbacks (simple HTTP POST to specific URL) that will be executed after purge is completed. Optional
- * - limelight['callbacks']['type']: (string) Callback type: 'entry' (callback after each path entry) or 'request' (single callback after the request completes)
- * - limelight['callbacks']['url']: (string) Callback url
+ * - limelight['callback']: (array) HTTP(S) callback URL for purge request state transition notifications. Optional
+ * - limelight['callback']['url']: (string) Callback url
  * - http['proxy']: (string) Http proxy for the client. For example: my-company.proxy.com:1234
  */
 class LimelightClient extends CdnClient

@@ -143,6 +143,9 @@ Configurations are specified as an array.
 | -------------                     | ------- | --------  | -----------   |
 | limelight['shortname']            | String  | Yes       | Limelight api shortname |
 | limelight['publish_url']          | String  | No        | Limelight publish url. This is prepended to the purge path if the path doesn't start with 'http' or 'https' |
+| limelight['evict']          | Boolean  | No        | If true, matching cache objects are evicted (deleted), otherwise invalidated. Default is false |
+| limelight['exact']          | Boolean  | No        | If true, paths to be purged are treated as an exact public URL. Optional. Default is false. Default is false |
+| limelight['incqs']          | Boolean  | No        | If true, pattern is allowed to match query string part of URL, otherwise query string is stripped before matching. Default is false |
 | limelight['email']                | Array   | No        | Array of email info to send purge completion details to |
 | limelight['email']['subject']     | String  | No        | Subject of sent mail |
 | limelight['email']['to']          | String  | Yes       | Email recipient address. A comma is used to separate multiple recipients |

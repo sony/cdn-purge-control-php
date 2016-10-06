@@ -21,7 +21,7 @@ class LimelightClientTest extends \PHPUnit_Framework_TestCase
         $this->publishUrlWithTrailingSlash = rtrim($this->publishUrl) . '/';
     }
 
-    private function getClient($user = NULL, $sharedKey = NULL, $publishUrl = NULL, $email = NULL, $callbacks = NULL)
+    private function getClient($user = NULL, $sharedKey = NULL, $publishUrl = NULL, $email = NULL, $callbacks = NULL, $evict = NULL, $exact = NULL, $incqs = NULL)
     {
         $config = array(
             'limelight' => array(
@@ -31,6 +31,15 @@ class LimelightClientTest extends \PHPUnit_Framework_TestCase
 
         if ($publishUrl) {
             $config['limelight']['publish_url'] = $publishUrl;
+        }
+        if ($evict) {
+            $config['limelight']['evict'] = $evict;
+        }
+        if ($exact) {
+            $config['limelight']['exact'] = $exact;
+        }
+        if ($incqs) {
+            $config['limelight']['incqs'] = $incqs;
         }
 
         if ($email) {
@@ -85,9 +94,9 @@ public function configAndCredentialProvider()
 /**
 * @dataProvider apiDataProvider
 */
-public function testCanCreatePurgeRequestAndGetStatus($user, $sharedKey, $publishUrl = NULL, $email = NULL, $callbacks = NULL)
+public function testCanCreatePurgeRequestAndGetStatus($user, $sharedKey, $publishUrl = NULL, $email = NULL, $callbacks = NULL, $evict = NULL, $exact = NULL, $incqs = NULL)
 {
-    $client = $this->getClient($user, $sharedKey, $publishUrl, $email, $callbacks);
+    $client = $this->getClient($user, $sharedKey, $publishUrl, $email, $callbacks, $evict, $exact, $incqs);
 
     $testPath = "/disttool-test.txt";
     if (empty($publishUrl)) {
@@ -125,7 +134,10 @@ public function apiDataProvider()
         'call without publish url' => array($this->user, $this->sharedKey),
         'call with email' => array($this->user, $this->sharedKey, $this->publishUrl, $email, array()),
         'call with cb' => array($this->user, $this->sharedKey, $this->publishUrl, array(), $callbacks),
-        'call with email & cb' => array($this->user, $this->sharedKey, $this->publishUrl, $email, $callbacks)
+        'call with email & cb' => array($this->user, $this->sharedKey, $this->publishUrl, $email, $callbacks),
+        'call with email & cb & evict' => array($this->user, $this->sharedKey, $this->publishUrl, $email, $callbacks, true),
+        'call with email & cb & exact' => array($this->user, $this->sharedKey, $this->publishUrl, $email, $callbacks, false, true),
+        'call with email & cb & incqs' => array($this->user, $this->sharedKey, $this->publishUrl, $email, $callbacks, false, false, true)
     );
 }
 
